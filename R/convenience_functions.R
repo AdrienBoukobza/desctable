@@ -7,7 +7,10 @@
 #' @return A nlevels(x) + 1 length vector of percentages
 percent <- function(x)
 {
-  c(NA, summary(x, maxsum = Inf) / length(x)) * 100
+  if (x %>% is.factor)
+    c(NA, summary(x, maxsum = Inf) / length(x)) * 100
+  else
+    NA
 }
 
 #' Return the inter-quartile range
@@ -18,7 +21,7 @@ percent <- function(x)
 #' @export
 IQR <- function(x)
 {
-  base::diff(stats::quantile(x, c(0.25, 0.75), na.rm = T))
+  base::diff(stats::quantile(x, c(0.25, 0.75), na.rm = T)) %>% setNames(NULL)
 }
 
 #' Test if distribution is normal
