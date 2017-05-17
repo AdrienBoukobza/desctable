@@ -20,3 +20,9 @@ test_that("IQR throws an error for non-numeric input",
           {
             expect_error(IQR(letters))
           })
+
+test_that("Formula versions of fisher.test and chisq.test works",
+          {
+            expect_equal(fisher.test(iris$Species ~ iris$Petal.Length > 5)$p.value, stats::fisher.test(iris$Species, iris$Sepal.Length > 5)$p.value)
+            expect_equal(chisq.test(iris$Species ~ iris$Petal.Length > 5)$p.value, stats::chisq.test(iris$Species, iris$Sepal.Length > 5)$p.value)
+          })
