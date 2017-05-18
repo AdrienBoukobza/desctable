@@ -26,3 +26,9 @@ test_that("Formula versions of fisher.test and chisq.test works",
             expect_equal(fisher.test(iris$Species ~ iris$Petal.Length > 5)$p.value, stats::fisher.test(iris$Species, iris$Sepal.Length > 5)$p.value)
             expect_equal(chisq.test(iris$Species ~ iris$Petal.Length > 5)$p.value, stats::chisq.test(iris$Species, iris$Sepal.Length > 5)$p.value)
           })
+
+test_that("no.test returns NA",
+          {
+            expect_equal(no.test(a ~ b),
+                         data.frame(p.value = NA))
+          })
