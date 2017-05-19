@@ -1,6 +1,6 @@
 context("build")
 
-test_that("statColumn returns correct lengths",
+test_that("statColumn returns correct values",
           {
             expect_equal(statColumn(length, iris),
                          c(Sepal.Length = 150,
@@ -55,7 +55,7 @@ test_that("varColumn returns correct names",
 
 test_that("Simple call to desctable works",
           {
-            expect_equal(desctable(iris),
+            expect_equal(desctable(iris, stats = list("N" = length, "Mean" = mean, "SD" = sd)),
                          structure(list(Variables = data.frame(Variables = c("Sepal.Length",
                                                                              "Sepal.Width",
                                                                              "Petal.Length",
@@ -67,15 +67,14 @@ test_that("Simple call to desctable works",
                                                                stringsAsFactors = F,
                                                                check.names = F),
                                         stats = data.frame(N = c(150, 150, 150, 150, 150, 50, 50, 50),
-                                                           `Mean/%` = c(NA, 3.05733333333333, NA, NA, NA, 33.3333333333333, 33.3333333333333, 33.3333333333333),
-                                                           sd = c(NA, 0.435866284936698, NA, NA, NA, NA, NA, NA),
-                                                           Med = c(5.8, NA, 4.35, 1.3, NA, NA, NA, NA),
-                                                           IQR = c(1.3, NA, 3.5, 1.5, NA, NA, NA, NA),
+                                                           Mean = c(5.84333333333333, 3.05733333333333, 3.758, 1.19933333333333, NA, NA, NA, NA),
+                                                           SD = c(0.828066127977863, 0.435866284936698, 1.76529823325947, 0.762237668960347, 0.81923192051904, 0, 0, 0),
                                                            stringsAsFactors = F,
-                                                           check.names = F)), class = "desctable"))
+                                                           check.names = F)),
+                                        class = "desctable"))
           })
 
-test_that("stats argument works",
+test_that("stats argument works with lambdas",
           {
             expect_equal(desctable(iris, stats = list("N" = length, "Sum" = sum, "Mean" = function(x){sum(x) / length(x)})),
                          structure(list(Variables = data.frame(Variables = c("Sepal.Length",
@@ -97,49 +96,42 @@ test_that("stats argument works",
 
 test_that("table with one var works",
           {
-expect_equal(desctable(data.frame(a = 1:100)),
-             structure(list(Variables = data.frame(Variables = "a",
-                                                   stringsAsFactors = F),
-                            stats = data.frame(N = 100,
-                                               Med = 50.5,
-                                               IQR = 49.5)),
-          class = "desctable")
-)
+            expect_equal(desctable(data.frame(a = 1:100), stats = list("N" = length, "Med" = median, "IQR" = IQR)),
+                         structure(list(Variables = data.frame(Variables = "a",
+                                                               stringsAsFactors = F),
+                                        stats = data.frame(N = 100,
+                                                           Med = 50.5,
+                                                           IQR = 49.5)),
+                                   class = "desctable")
+                         )
+          })
+
+test_that("subNames returns the correct names",
+          {
+            expect_equal(subNames(as.symbol("Species"), iris),
+                         c("Species: setosa (n=50)", "Species: versicolor (n=50)", "Species: virginica (n=50)")
+                         )
           })
 
 test_that("Grouped call to desctable works",
           {
-            expect_equal(desctable(group_by(iris, Species)),
+            expect_equal(desctable(group_by(iris, Species), stats= list("N" = length, "Med" = median, "IQR" = IQR), tests = list(.default = ~kruskal.test, Sepal.Length = ~oneway.test)),
                          structure(list(Variables = data.frame(Variables = c("Sepal.Length",
                                                                              "Sepal.Width",
                                                                              "Petal.Length",
                                                                              "Petal.Width"),
-                                                               stringsAsFactors = F,
-                                                               check.names = F),
+                                                               stringsAsFactors = F),
                                         `Species: setosa (n=50)` = data.frame(N = c(50, 50, 50, 50),
-                                                                              Mean = c(5.006, 3.428, NA, NA),
-                                                                              sd = c(0.352489687213451, 0.379064369096289, NA, NA),
-                                                                              Med = c(NA, NA, 1.5, 0.2),
-                                                                              IQR = c(NA, NA, 0.175, 0.1),
-                                                                              stringsAsFactors = F,
-                                                                              check.names = F),
+                                                                              Med = c(5, 3.4, 1.5, 0.2),
+                                                                              IQR = c(0.4, 0.475, 0.175, 0.1)),
                                         `Species: versicolor (n=50)` = data.frame(N = c(50, 50, 50, 50),
-                                                                                  Mean = c(5.936, 2.77, 4.26, NA),
-                                                                                  sd = c(0.516171147063863, 0.313798323378411, 0.469910977239958, NA),
-                                                                                  Med = c(NA, NA, NA, 1.3),
-                                                                                  IQR = c(NA, NA, NA, 0.3),
-                                                                                  stringsAsFactors = F,
-                                                                                  check.names = F),
+                                                                                  Med = c(5.9, 2.8, 4.35, 1.3),
+                                                                                  IQR = c(0.7, 0.475, 0.6, 0.3)),
                                         `Species: virginica (n=50)` = data.frame(N = c(50, 50, 50, 50),
-                                                                                 Mean = c(6.588, 2.974, 5.552, NA),
-                                                                                 sd = c(0.635879593274432, 0.322496638172637, 0.551894695663983, NA),
-                                                                                 Med = c(NA, NA, NA, 2),
-                                                                                 IQR = c(NA, NA, NA, 0.5),
-                                                                                 stringsAsFactors = F,
-                                                                                 check.names = F),
-                                        tests = data.frame(p = c(1.5050589627451e-28, 4.49201713330911e-17, 4.80397359115759e-29, 3.26179555242197e-29),
-                                                           test = c(". %>% oneway.test(var.equal = F)", ". %>% oneway.test(var.equal = T)", "kruskal.test", "kruskal.test"),
-                                                           stringsAsFactors = F,
-                                                           check.names = F)),
+                                                                                 Med = c(6.5, 3, 5.55, 2),
+                                                                                 IQR = c(0.675, 0.375, 0.775000000000001, 0.5)),
+                                        tests = data.frame(p = c(1.5050589627451e-28, 1.56928209403159e-14, 4.80397359115759e-29, 3.26179555242197e-29),
+                                                           test = c("oneway.test", "kruskal.test", "kruskal.test", "kruskal.test"),
+                                                           stringsAsFactors = F)),
                                    class = "desctable"))
           })
