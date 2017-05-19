@@ -21,7 +21,7 @@ percent <- function(x)
 #' @export
 IQR <- function(x)
 {
-  base::diff(stats::quantile(x, c(0.25, 0.75), na.rm = T)) %>% setNames(NULL)
+  base::diff(stats::quantile(x, c(0.25, 0.75), na.rm = T)) %>% stats::setNames(NULL)
 }
 
 #' Test if distribution is normal
